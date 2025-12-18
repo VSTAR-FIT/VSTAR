@@ -23,6 +23,49 @@
             "related": ".xml"
           }
         }
+      },
+      "MathNet.Numerics.MKL.Win/3.0.0": {
+        "type": "package",
+        "dependencies": {
+          "MathNet.Numerics.Providers.MKL": "5.0.0"
+        },
+        "build": {
+          "buildTransitive/net5.0/_._": {}
+        },
+        "runtimeTargets": {
+          "runtimes/win-x64/native/libMathNetNumericsMKL.dll": {
+            "assetType": "native",
+            "rid": "win-x64"
+          },
+          "runtimes/win-x64/native/libiomp5md.dll": {
+            "assetType": "native",
+            "rid": "win-x64"
+          },
+          "runtimes/win-x86/native/libMathNetNumericsMKL.dll": {
+            "assetType": "native",
+            "rid": "win-x86"
+          },
+          "runtimes/win-x86/native/libiomp5md.dll": {
+            "assetType": "native",
+            "rid": "win-x86"
+          }
+        }
+      },
+      "MathNet.Numerics.Providers.MKL/5.0.0": {
+        "type": "package",
+        "dependencies": {
+          "MathNet.Numerics": "5.0.0"
+        },
+        "compile": {
+          "lib/net6.0/MathNet.Numerics.Providers.MKL.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net6.0/MathNet.Numerics.Providers.MKL.dll": {
+            "related": ".xml"
+          }
+        }
       }
     }
   },
@@ -60,28 +103,76 @@
         "mathnet.numerics.5.0.0.nupkg.sha512",
         "mathnet.numerics.nuspec"
       ]
+    },
+    "MathNet.Numerics.MKL.Win/3.0.0": {
+      "sha512": "VyC9uLsfzB/gexJ91rf7zKC2M/DznhoeOtAV4Mx2kkT4YBIYboL4R2TzpjgQiz6P+f1bVY97f0vrVYtCPlUsag==",
+      "type": "package",
+      "path": "mathnet.numerics.mkl.win/3.0.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "build/net461/MathNet.Numerics.MKL.Win.targets",
+        "build/net48/MathNet.Numerics.MKL.Win.targets",
+        "build/net5.0/_._",
+        "build/netstandard2.0/_._",
+        "buildTransitive/net461/MathNet.Numerics.MKL.Win.targets",
+        "buildTransitive/net48/MathNet.Numerics.MKL.Win.targets",
+        "buildTransitive/net5.0/_._",
+        "buildTransitive/netstandard2.0/_._",
+        "icon.png",
+        "license.txt",
+        "mathnet.numerics.mkl.win.3.0.0.nupkg.sha512",
+        "mathnet.numerics.mkl.win.nuspec",
+        "runtimes/win-x64/native/libMathNetNumericsMKL.dll",
+        "runtimes/win-x64/native/libiomp5md.dll",
+        "runtimes/win-x86/native/libMathNetNumericsMKL.dll",
+        "runtimes/win-x86/native/libiomp5md.dll"
+      ]
+    },
+    "MathNet.Numerics.Providers.MKL/5.0.0": {
+      "sha512": "cCOM4ImHjdbpD2iR4/6mVFq+sD0sI5hXlAYJXIKmob+20OiA7QQ259vY4GLXYOLBhy35D2QjGmBlgdzNNkuepw==",
+      "type": "package",
+      "path": "mathnet.numerics.providers.mkl/5.0.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "icon.png",
+        "lib/net461/MathNet.Numerics.Providers.MKL.dll",
+        "lib/net461/MathNet.Numerics.Providers.MKL.xml",
+        "lib/net48/MathNet.Numerics.Providers.MKL.dll",
+        "lib/net48/MathNet.Numerics.Providers.MKL.xml",
+        "lib/net5.0/MathNet.Numerics.Providers.MKL.dll",
+        "lib/net5.0/MathNet.Numerics.Providers.MKL.xml",
+        "lib/net6.0/MathNet.Numerics.Providers.MKL.dll",
+        "lib/net6.0/MathNet.Numerics.Providers.MKL.xml",
+        "lib/netstandard2.0/MathNet.Numerics.Providers.MKL.dll",
+        "lib/netstandard2.0/MathNet.Numerics.Providers.MKL.xml",
+        "mathnet.numerics.providers.mkl.5.0.0.nupkg.sha512",
+        "mathnet.numerics.providers.mkl.nuspec"
+      ]
     }
   },
   "projectFileDependencyGroups": {
     "net10.0": [
       "DotNumerics >= 1.1.0",
-      "MathNet.Numerics >= 5.0.0"
+      "MathNet.Numerics >= 5.0.0",
+      "MathNet.Numerics.MKL.Win >= 3.0.0"
     ]
   },
   "packageFolders": {
-    "C:\\Users\\matth\\.nuget\\packages\\": {}
+    "C:\\Users\\river\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\matth\\OneDrive\\Documents\\GitHub\\VSTAR\\VSTAR_codes\\VSTAR.csproj",
+      "projectUniqueName": "C:\\Users\\river\\Documents\\GitHub\\VSTAR\\VSTAR_codes\\VSTAR.csproj",
       "projectName": "VSTAR",
-      "projectPath": "C:\\Users\\matth\\OneDrive\\Documents\\GitHub\\VSTAR\\VSTAR_codes\\VSTAR.csproj",
-      "packagesPath": "C:\\Users\\matth\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\matth\\OneDrive\\Documents\\GitHub\\VSTAR\\VSTAR_codes\\obj\\",
+      "projectPath": "C:\\Users\\river\\Documents\\GitHub\\VSTAR\\VSTAR_codes\\VSTAR.csproj",
+      "packagesPath": "C:\\Users\\river\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\river\\Documents\\GitHub\\VSTAR\\VSTAR_codes\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\matth\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "C:\\Users\\river\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net10.0"
@@ -118,6 +209,10 @@
           "MathNet.Numerics": {
             "target": "Package",
             "version": "[5.0.0, )"
+          },
+          "MathNet.Numerics.MKL.Win": {
+            "target": "Package",
+            "version": "[3.0.0, )"
           }
         },
         "imports": [
@@ -136,7 +231,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.100/PortableRuntimeIdentifierGraph.json",
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.101/PortableRuntimeIdentifierGraph.json",
         "packagesToPrune": {
           "Microsoft.CSharp": "(,4.7.32767]",
           "Microsoft.VisualBasic": "(,10.4.32767]",

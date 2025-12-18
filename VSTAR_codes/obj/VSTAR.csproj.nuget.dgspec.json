@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\matth\\OneDrive\\Documents\\GitHub\\VSTAR\\VSTAR_codes\\VSTAR.csproj": {}
+    "C:\\Users\\river\\Documents\\GitHub\\VSTAR\\VSTAR_codes\\VSTAR.csproj": {}
   },
   "projects": {
-    "C:\\Users\\matth\\OneDrive\\Documents\\GitHub\\VSTAR\\VSTAR_codes\\VSTAR.csproj": {
+    "C:\\Users\\river\\Documents\\GitHub\\VSTAR\\VSTAR_codes\\VSTAR.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\matth\\OneDrive\\Documents\\GitHub\\VSTAR\\VSTAR_codes\\VSTAR.csproj",
+        "projectUniqueName": "C:\\Users\\river\\Documents\\GitHub\\VSTAR\\VSTAR_codes\\VSTAR.csproj",
         "projectName": "VSTAR",
-        "projectPath": "C:\\Users\\matth\\OneDrive\\Documents\\GitHub\\VSTAR\\VSTAR_codes\\VSTAR.csproj",
-        "packagesPath": "C:\\Users\\matth\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\matth\\OneDrive\\Documents\\GitHub\\VSTAR\\VSTAR_codes\\obj\\",
+        "projectPath": "C:\\Users\\river\\Documents\\GitHub\\VSTAR\\VSTAR_codes\\VSTAR.csproj",
+        "packagesPath": "C:\\Users\\river\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\river\\Documents\\GitHub\\VSTAR\\VSTAR_codes\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\matth\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\river\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net10.0"
@@ -51,6 +51,10 @@
             "MathNet.Numerics": {
               "target": "Package",
               "version": "[5.0.0, )"
+            },
+            "MathNet.Numerics.MKL.Win": {
+              "target": "Package",
+              "version": "[3.0.0, )"
             }
           },
           "imports": [
@@ -69,7 +73,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.100/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.101/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.CSharp": "(,4.7.32767]",
             "Microsoft.VisualBasic": "(,10.4.32767]",
