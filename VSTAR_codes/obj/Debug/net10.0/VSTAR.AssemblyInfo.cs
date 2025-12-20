@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("VSTAR")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+00abbdcc4e62bba4bf46d9793f4c7b4ad72a922b")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+900b0eb0886689e44b721b7c0e9ac236646faf7d")]
 [assembly: System.Reflection.AssemblyProductAttribute("VSTAR")]
 [assembly: System.Reflection.AssemblyTitleAttribute("VSTAR")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

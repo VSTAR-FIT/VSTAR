@@ -68,14 +68,6 @@ public class RotateOrion3
      // convert external torque vector3 to mathnet vector for type matching
      var Tb_ext_arr = MathNet.Numerics.LinearAlgebra.Vector<double>.Build.Dense(new double[] { Tb_ext.X, Tb_ext.Y, Tb_ext.Z });
 
-        
-	
-     var zero4x4 = Matrix<double>.Build.Dense(4,4); // 4x4 matrix of zeroes
-     var zero4x3 = Matrix<double>.Build.Dense(4,3); // 4x3 matrix of zeroes
-
-
-     
-
      double[] xdot(double t, double[] x)
         {
             double[] dxdt = new double[7]; // empty xdot array
@@ -110,11 +102,18 @@ public class RotateOrion3
 
 		double t0 = 0; //integrator start time
 		double tf = 0.015; //integrator end time
-        
+        double dt = 0.001; //time step for integrator
       
         var rk45 = new OdeExplicitRungeKutta45(xdot, 7);
-        OdeSolution sol = rk45.Solve(x, t0, tf); //perform integration
-        double[] newx = sol.Y[sol.Y.Length - 1]; //get final state vector from integrator
+        // DotNumerics' Solve returns a 2D array [state,row,time,column]
+        double[,] sol = rk45.Solve(x, t0, dt, tf); //perform integration
+        int rows = sol.GetLength(0);
+        int cols = sol.GetLength(1);
+        double[] newx = new double[rows]; // get final state vector (last column)
+        for (int i = 0; i < rows; i++)
+        {
+            newx[i] = sol[i, cols - 1];
+        }
         return newx;
     }
 }
