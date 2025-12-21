@@ -1,0 +1,141 @@
+using System;
+
+public class RotateOrion3
+{
+	//define the inertia matrix, take inverse (need for state derivative)
+    double[] MOI_b ={ {Ixx ,0 ,0},
+				   {0, Iyy, 0},
+				   {0, 0, Izz} };
+	double[] MOI_b_inv = Invert(MOI_b);
+
+
+
+	//initialize angular speed vector and quaternion array (will be used as inputs for the Rotateorion3 function)
+	double[] w = {wx, wy, wz};
+	double[] q = {q1, q2, q3, q4};
+
+
+	//define xi, which is used for qdot
+	static double[,] Xi(double[] q)
+{
+    double q1 = q[0];
+    double q2 = q[1];
+    double q3 = q[2];
+    double q4 = q[3];
+
+    return new double[,]
+    {
+        {  q4, -q3,  q2 },
+        {  q3,  q4, -q1 },
+        { -q2,  q1,  q4 },
+        { -q1, -q2, -q3 }
+    };
+}
+	public RotateOrion3()
+    {
+        
+
+    }
+}
+
+
+
+
+Mass = 25900 %mass in kg for CM and ESM, artemis ii figures from nasa orion reference guide
+
+
+MOI_b = [ ... ... ...
+	  ... ... ...
+	  ... ... ... ]
+ 
+Inv_MOI = inverse of MOI matrix
+
+
+Initial attitude (should be grabbed from sim parameters)
+
+theta_1 = 
+theta_2 = 
+theta_3 = 
+
+Rotation matrix 1 = [ ... ... ...
+	  	      ... ... ...
+		      ... ... ... ]
+
+Rotation matrix 2 = [ ... ... ...
+	  	      ... ... ...
+		      ... ... ... ]
+
+Rotation matrix 3 = [ ... ... ...
+	  	      ... ... ...
+		      ... ... ... ]
+
+R1*R2*R3 = initial attitude
+
+q_bar_0 = [ ... ... ... ...]   <-----------------------------Should I only use quaternions? 
+
+w_bar_0 = [ ... ... ...]
+
+v_bar_0 = [ ... ... ...]
+
+
+pos_x0  = [position_0, v_bar_0]
+rot_x0  = [q_bar_0, w_bar_0] = rot_x{}
+			   
+
+prop_load = ... (total propellant on board at start)
+prop_remain = ... (total propellant on board at current moment)
+prop-per_fire = ... (propellant used per thruster fire) assuming 10ms pulse - is that the case
+
+thruster misalignment?
+
+
+actual function:
+
+	grab state vector
+
+	pos_x = [current_pos, v_bar] (1x6)
+	
+	rot_x = [q_bar, w_bar] (1x7)
+
+
+	if (RHC input)
+
+		external torque matrix?
+		
+		run an ode for timestep = fixedupdate
+	
+		A = [ zeroes(4,4)   0.5* [identity * rot_x(4)  +  whatever the xi function is(rot_x(1:3)]  ;
+
+		      zeroes(3,4)   inv_MOI .*[rot_x(4:7) cross MOI_b)                                     ]
+
+		B = [ zeroes(4,3) ;   .* Euler rotational EOM		
+		      inv_MOI     ] 
+
+		rot_x_dot = A.*rot_x + B
+
+		BANGBANG BAYBEEEEE
+		
+		add resulting rotational and w speed changes to rot_x
+
+	
+
+	if (THC input)
+
+
+		basically pulse and add some delta V
+
+		exact delta v is governed by rocket eqn!!!!
+
+		delta_v = exhaust_velocity * ln( prop_remain / ( prop_remain - prop_per_fire ) )
+
+		multi axial thrust - also bangbang
+			only thrusts on 1 axis at a time? perfect. 
+
+		add resulting positional and v speed changes to pos_x
+		
+		prop_remain = prop_remain - prop_per_fire
+
+
+call every fixedUpdate timestep 
+
+store prop_remain and xbar outside? not sure
