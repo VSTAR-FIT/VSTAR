@@ -1,5 +1,4 @@
-
-using System.Numerics;
+using UnityEngine;
 using MathNet.Numerics.LinearAlgebra;
 using DotNumerics.ODE;
 
@@ -50,7 +49,7 @@ public class RotateOrion3
    
 
 //CREATE FUNCTION THAT WILL TAKE STATE VECTOR AND EXTERNAL TORQUE, RETURN NEW STATE VECTOR
- public double[] Rotate3(double[] x, Vector3 Tb_ext )
+ public double[] Rotate3(double[] x, UnityEngine.Vector3 Tb_ext )
     {
     var MOI_b = Matrix<double>.Build.DenseOfArray(new double[,]
         { 
@@ -66,7 +65,7 @@ public class RotateOrion3
      var x_vec = MathNet.Numerics.LinearAlgebra.Vector<double>.Build.DenseOfArray(x);
 
      // convert external torque vector3 to mathnet vector for type matching
-     var Tb_ext_arr = MathNet.Numerics.LinearAlgebra.Vector<double>.Build.Dense(new double[] { Tb_ext.X, Tb_ext.Y, Tb_ext.Z });
+     var Tb_ext_arr = MathNet.Numerics.LinearAlgebra.Vector<double>.Build.Dense(new double[] { Tb_ext.x, Tb_ext.y, Tb_ext.z });
 
      double[] xdot(double t, double[] x)
         {
@@ -101,8 +100,8 @@ public class RotateOrion3
 		//now we get to integrating - this uses DotNumerics runge-kutta fourth/fifth order
 
 		double t0 = 0; //integrator start time
-		double tf = 0.015; //integrator end time
-        double dt = 0.001; //time step for integrator
+		double tf = 0.02; //integrator end time
+        double dt = 0.002; //time step for integrator
       
         var rk45 = new OdeExplicitRungeKutta45(xdot, 7);
         // DotNumerics' Solve returns a 2D array [state,row,time,column]
