@@ -76,6 +76,8 @@ public class dynamicsModel : MonoBehaviour //itialize everything
     if (Keyboard.current.jKey.isPressed) tau.x -= 100f;
     if (Keyboard.current.kKey.isPressed) tau.y -= 100f;
      if (Keyboard.current.lKey.isPressed) tau.z -= 100f;
+
+     
     
     //it is very important to remember that tau x y z corresponds to the x y z axes of the game object - needs to be aliged with repectiv 1 2 3 axes of the actual model
 

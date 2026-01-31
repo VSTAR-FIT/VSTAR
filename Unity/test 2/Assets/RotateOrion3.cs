@@ -12,31 +12,14 @@ using MathNet.Numerics.LinearAlgebra;
 public class RotateOrion3
 {
 	//initialize the inertia matrix, take inverse (need for state derivative) MOIS ARE PLACEHOLDER
-    private const double Ixx = 1 ; 
-    private const double Iyy = 1 ;
-    private const double Izz = 1 ;
+    private const double Ixx = 400 ; 
+    private const double Iyy = 400 ;
+    private const double Izz = 400 ;
     
     private readonly Matrix<double> MOI_b ;
     private readonly Matrix<double> MOI_b_inv ;
       
-      //define xi, which is used for qdot
-    public static Matrix<double> Xi(MathNet.Numerics.LinearAlgebra.Vector<double> q)  
-        {
-            double q1 = q[0];
-            double q2 = q[1];
-            double q3 = q[2];
-            double q4 = q[3];
-
-            return Matrix<double>.Build.DenseOfArray(new double[,]
-            {
-
-            {  q4, -q3,  q2 },
-            {  q3,  q4, -q1 },
-            { -q2,  q1,  q4 },
-            { -q1, -q2, -q3 }
-
-             });
-        }
+      
 
         //skew symmetric matrix for angular velocity
     public static Matrix<double> Skew(MathNet.Numerics.LinearAlgebra.Vector<double> w)
