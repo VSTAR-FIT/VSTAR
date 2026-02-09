@@ -16,6 +16,20 @@ MonoBehaviour:
   m_AutomaticLoading: 0
   m_AutomaticRunning: 0
   m_Loaders: []
+--- !u!114 &-4952481943659055089
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d236b7d11115f2143951f1e14045df39, type: 3}
+  m_Name: WebGL Settings
+  m_EditorClassIdentifier: 
+  m_LoaderManagerInstance: {fileID: 6982127451808183253}
+  m_InitManagerOnStart: 1
 --- !u!114 &-361912891036490947
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -42,12 +56,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d2dc886499c26824283350fa532d087d, type: 3}
   m_Name: XRGeneralSettingsPerBuildTarget
   m_EditorClassIdentifier: 
-  Keys: 010000000e0000000400000007000000
+  Keys: 010000000e00000004000000070000000d000000
   Values:
   - {fileID: -361912891036490947}
   - {fileID: 117008013815252452}
   - {fileID: 7905828154477038388}
   - {fileID: 4539142933338360373}
+  - {fileID: -4952481943659055089}
 --- !u!114 &117008013815252452
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -112,6 +127,7 @@ MonoBehaviour:
   m_AutomaticRunning: 0
   m_Loaders:
   - {fileID: 11400000, guid: e4706165c248c6e40ab8de25203dab8e, type: 2}
+  - {fileID: 11400000, guid: c988389a0ddc10a42b87c49019c4494a, type: 2}
   - {fileID: 11400000, guid: 8a677942b9328a44cae76081e526a351, type: 2}
 --- !u!114 &4539142933338360373
 MonoBehaviour:
@@ -127,6 +143,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_LoaderManagerInstance: {fileID: 452095916386837559}
   m_InitManagerOnStart: 1
+--- !u!114 &6982127451808183253
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4c3631f5e58749a59194e0cf6baf6d5, type: 3}
+  m_Name: WebGL Providers
+  m_EditorClassIdentifier: 
+  m_RequiresSettingsUpdate: 0
+  m_AutomaticLoading: 0
+  m_AutomaticRunning: 0
+  m_Loaders: []
 --- !u!114 &7905828154477038388
 MonoBehaviour:
   m_ObjectHideFlags: 0
