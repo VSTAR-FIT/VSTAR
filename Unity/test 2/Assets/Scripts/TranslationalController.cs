@@ -1,10 +1,12 @@
+using System.ComponentModel;
 using System.Numerics;
+using System.Reflection.Metadata.Ecma335;
 using System.Security.Cryptography;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.XR.Interaction.Toolkit;
 
-public class RotationalController : MonoBehaviour
+public class TranslationalController : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private Transform rotatingBody;
@@ -16,29 +18,33 @@ public class RotationalController : MonoBehaviour
     [SerializeField] private float returnSpeed = 5.0f;
     [SerializeField] private float gain = 4.0f;
     [SerializeField] private float smoothing = 10f;
+    [SerializeField] private float railLength = 1f;
+
 
     [Header("Output")]
-    [SerializeField] private Vector3 rateCmd;
+    [SerializeField] private Vector3 forceCmd;
 
     private Quaternion qFilter;
     private float pitch;
     private float roll;
-
-    private Vector2 pad;
+    private float ds; //vertical distance from push in/pull out
 
     private bool grabbed = false;
+    private bool railCheck = false;
 
     void Start()
     {
+
+        //idle rotation and idle position in local controller frame
         qFilter = rotatingBody.rotation;
+        idlePos = pivotbody.InverseTransformPoint(rotatingbody.position);
     }
 
     //INTERACTION - triggers as long as collider in contact with controller
     private void OnTriggerStay(Collider other)
     {
         // Try to find a controller from the collider
-        ActionBasedController controller =
-            other.GetComponentInParent<ActionBasedController>();
+        ActionBasedController controller = other.GetComponentInParent<ActionBasedController>();
 
         //if no controller or if the grab button isnt pressed, do nothing
         if (controller == null)
@@ -50,25 +56,29 @@ public class RotationalController : MonoBehaviour
         Transform hand = controller.transform;
         Vector3 localHandPos = pivotBody.InverseTransformPoint(hand.position);
 
-        //convert position to angle, clamp to mechanical limits
-        pitch = localHandPos.x * -60f; //only works if inverted because of quaternion math shenanigans (i think)
-        pitch = Mathf.Clamp(pitch, -20, 20);
+        //CHECK to see if user is intending x motion or yz motion
+        if (controller.activateAction.action.IsPressed())
+        {
+          ds = localHandPos.y * 60f;
+          ds = Mathf.Clamp(ds, -railLength, railLength);
+          rotatingBody.position += ds;  
+          railCheck = true;  
+        }
+        else
+        {
+          railCheck = false;
+          //convert position to angle, clamp to mechanical limits
+          pitch = localHandPos.x * -60f; //only works if inverted because of quaternion math shenanigans (i think)
+          pitch = Mathf.Clamp(pitch, -20, 20);
 
-        roll = localHandPos.z * 60f;
-        roll = Mathf.Clamp(roll, -20, 20); 
+          roll = localHandPos.z * 60f;
+          roll = Mathf.Clamp(roll, -20, 20); 
 
 
-        //apply rotation to stick
-        rotatingBody.localRotation =
-            Quaternion.Euler(roll, 0f, pitch); 
-
-         //grab current pad x state 
-        if (!trackpadClick.IsPressed)
-            rateCmd[1] = 0;
-        if (trackpadClick.IsPressed)
-            pad = trackpadPosition.ReadValue<Vector2>();
+          //apply rotation to stick
+          rotatingBody.localRotation = Quaternion.Euler(roll, 0f, pitch); 
             
-
+        }
     grabbed = true; //toggle grab state to tell the controller not to perform return behaviour
     }
     void FixedUpdate()
@@ -105,9 +115,9 @@ public class RotationalController : MonoBehaviour
 
 
             //read in commands (MAY HAVE TO FLIP THEM AROUND DEPENDING ON COORDINATE SYSTEM)
-            rateCmd[0] = gain * cmd * axis.normalized[0];
-            rateCmd[1] = gain * pad(0)^2;
-            rateCmd[2] = gain * cmd * axis.normalized[2];
+            forceCmd[0] = gain * cmd * axis.normalized[0];
+            forceCmd[1] = gain * (ds/railLength)^2;
+            forceCmd[2] = gain * cmd * axis.normalized[2];
         
 
 
@@ -119,6 +129,10 @@ public class RotationalController : MonoBehaviour
             
         }
             grabbed = false; //if controller is still grabbed at next call it will be reassigned as true before we get back here
-        
+
+        if (railCheck != true)
+        {
+            rotatingBody.position = position.Lerp(rotatingBody.position, idlePos, Time.deltaTime * returnSpeed);
+        }
     }
 }
