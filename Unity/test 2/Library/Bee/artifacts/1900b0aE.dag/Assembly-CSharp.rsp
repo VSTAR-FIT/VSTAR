@@ -375,8 +375,8 @@
 "Assets/Scripts/dynamicsModel.cs"
 "Assets/Scripts/RotateOrion3.cs"
 "Assets/Scripts/RotationalController.cs"
-"Assets/Scripts/THC.cs"
 "Assets/Scripts/TranslateOrion3.cs"
+"Assets/Scripts/TranslationalController.cs"
 -langversion:9.0
 
 /deterministic

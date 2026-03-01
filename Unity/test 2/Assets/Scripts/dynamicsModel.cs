@@ -9,9 +9,8 @@ using System.Runtime.CompilerServices;
 
 public class dynamicsModel : MonoBehaviour //itialize everything
 {
-    [SerializeField] int mass_dry = 13486;
-    [SerializeField] int mass_prop = 12414;
-
+     
+   [SerializeField] private float mass = 25900;
    
     
     //this makes ICs available to set in unity editor
@@ -23,6 +22,8 @@ public class dynamicsModel : MonoBehaviour //itialize everything
     [Header("Initial Positional States")]
     [SerializeField] private Vector3 initialPosition = Vector3.zero;
     [SerializeField] private Vector3 initialTranslationalVelocity = Vector3.zero;
+    [SerializeField] private UnityEngine.Vector3 F_ext = Vector3.zero;
+    private Rigidbody rb; //need for velocity
 
 
     //initialize rotational state vector before start so that fixedupdate doesnt run before rot gets a value
@@ -38,16 +39,25 @@ public class dynamicsModel : MonoBehaviour //itialize everything
        0,
        0 
     }; 
+    private double[] pos = new double[6];
     
+    private RotateOrion3 Spin;
+    private TranslateOrion3 Move;
+    private ControlLaw ControlLaw;
     
-    private RotateOrion3 Spin = new RotateOrion3();
+
    
 
-
+ 
 
 
  void Start()
  {
+   
+    ControlLaw = GetComponent<ControlLaw>();
+    Spin = GetComponent<RotateOrion3>();
+    Move = GetComponent<TranslateOrion3>();
+     
     //fill in rotational state array from inspector values
     rot = new double[7] { 
 
@@ -61,27 +71,34 @@ public class dynamicsModel : MonoBehaviour //itialize everything
         initialAngularVelocity.z 
     }; 
 
+    pos = new double[6] { 
 
+        initialPosition.x, 
+        initialPosition.y, 
+        initialPosition.z, 
+
+        initialTranslationalVelocity.x, 
+        initialTranslationalVelocity.y, 
+        initialTranslationalVelocity.z 
+    };
+
+    //apply the effects of initial conditions before loop start
+    rot = Spin.Rotate3(rot, tau); 
+    transform.rotation = new Quaternion((float)rot[0], (float)rot[1], (float)rot[2], (float)rot[3]);
+
+    pos = Move.Translate3(pos, F_ext, mass);
+    transform.position = new Vector3((float)pos[0], (float)pos[1], (float)pos[2]);
  }
 
  void FixedUpdate()
  {
+   
+   tau = ControlLaw.Tb_ext;
+   F_ext = ControlLaw.F_ext;
+
+
+   //it is very important to remember that tau x y z corresponds to the x y z axes of the game object - needs to be aliged with repectiv 1 2 3 axes of the actual model
    //*******************ROTATIONAL DYNAMICS***********************
-
-    // check if torque input
-    if (Keyboard.current.uKey.isPressed) tau.x += 100f;
-    if (Keyboard.current.iKey.isPressed) tau.y += 100f;
-    if (Keyboard.current.oKey.isPressed) tau.z += 100f;
-
-    if (Keyboard.current.jKey.isPressed) tau.x -= 100f;
-    if (Keyboard.current.kKey.isPressed) tau.y -= 100f;
-     if (Keyboard.current.lKey.isPressed) tau.z -= 100f;
-
-     
-    
-    //it is very important to remember that tau x y z corresponds to the x y z axes of the game object - needs to be aliged with repectiv 1 2 3 axes of the actual model
-
-    
     rot = Spin.Rotate3(rot, tau); 
 
     transform.rotation = new Quaternion((float)rot[0], (float)rot[1], (float)rot[2], (float)rot[3]); // actually apply rotation to rigidbody
@@ -90,5 +107,10 @@ public class dynamicsModel : MonoBehaviour //itialize everything
 
 
     //******************TRANSLATIONAL DYNAMICS********************
+    pos = Move.Translate3(pos, F_ext, mass);
+
+    transform.position = new Vector3((float)pos[0], (float)pos[1], (float)pos[2]);
+
+    F_ext = Vector3.zero; //reset force afer loop
  }
 }

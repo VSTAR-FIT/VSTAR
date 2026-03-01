@@ -1,7 +1,4 @@
-using System.ComponentModel;
-using System.Numerics;
-using System.Reflection.Metadata.Ecma335;
-using System.Security.Cryptography;
+
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.XR.Interaction.Toolkit;
@@ -11,7 +8,7 @@ public class TranslationalController : MonoBehaviour
     [Header("References")]
     [SerializeField] private Transform rotatingBody;
     [SerializeField] private Transform pivotBody;
-
+    
 
     [Header("Controller Tuning")]
     [SerializeField] private float deadzoneDeg = 1.0f;
@@ -22,9 +19,11 @@ public class TranslationalController : MonoBehaviour
 
 
     [Header("Output")]
-    [SerializeField] private Vector3 forceCmd;
+    [SerializeField] public Vector3 forceCmd;
 
+    private Quaternion qIdle;
     private Quaternion qFilter;
+    private Vector3 idlePos;
     private float pitch;
     private float roll;
     private float ds; //vertical distance from push in/pull out
@@ -37,7 +36,8 @@ public class TranslationalController : MonoBehaviour
 
         //idle rotation and idle position in local controller frame
         qFilter = rotatingBody.rotation;
-        idlePos = pivotbody.InverseTransformPoint(rotatingbody.position);
+        qIdle = pivotBody.rotation;
+        idlePos = pivotBody.InverseTransformPoint(rotatingBody.position);
     }
 
     //INTERACTION - triggers as long as collider in contact with controller
@@ -56,32 +56,42 @@ public class TranslationalController : MonoBehaviour
         Transform hand = controller.transform;
         Vector3 localHandPos = pivotBody.InverseTransformPoint(hand.position);
 
+        //figure out where the stick is compared to the pivot
+        Vector3 localRotatingBody = pivotBody.InverseTransformPoint(rotatingBody.position);
+
         //CHECK to see if user is intending x motion or yz motion
         if (controller.activateAction.action.IsPressed())
         {
-          ds = localHandPos.y * 60f;
-          ds = Mathf.Clamp(ds, -railLength, railLength);
-          rotatingBody.position += ds;  
+          //define current stick displacement and reference to idle state
+          float offset = localHandPos.y;
+          Vector3 referencePosition = idlePos;
+
+          //read displacement into position
+          ds = Mathf.Clamp(offset, -railLength, railLength);
+          referencePosition.y = idlePos.y + ds;
+            Debug.Log("ds:" + ds);
+
+          rotatingBody.localPosition = referencePosition;
+
           railCheck = true;  
         }
         else
         {
-          railCheck = false;
+          
           //convert position to angle, clamp to mechanical limits
           pitch = localHandPos.x * -60f; //only works if inverted because of quaternion math shenanigans (i think)
-          pitch = Mathf.Clamp(pitch, -20, 20);
-
           roll = localHandPos.z * 60f;
+          
+          pitch = Mathf.Clamp(pitch, -20, 20);
           roll = Mathf.Clamp(roll, -20, 20); 
-
-
+          
           //apply rotation to stick
           rotatingBody.localRotation = Quaternion.Euler(roll, 0f, pitch); 
-            
+          grabbed = true; //toggle grab state to tell the controller not to perform return behaviour
         }
     grabbed = true; //toggle grab state to tell the controller not to perform return behaviour
     }
-    void FixedUpdate()
+ void FixedUpdate()
     {
 
             // use slerp as a lowpass filter to reduce noise from IMU jitter
@@ -92,7 +102,6 @@ public class TranslationalController : MonoBehaviour
             );
 
             // calculate quaternion error
-            Quaternion qIdle = pivotBody.parent.rotation;
             Quaternion qError = qFilter * Quaternion.Inverse(qIdle);
 
             // convert to axis-angle
@@ -116,7 +125,7 @@ public class TranslationalController : MonoBehaviour
 
             //read in commands (MAY HAVE TO FLIP THEM AROUND DEPENDING ON COORDINATE SYSTEM)
             forceCmd[0] = gain * cmd * axis.normalized[0];
-            forceCmd[1] = gain * (ds/railLength)^2;
+            forceCmd[1] = gain * Mathf.Pow(ds/railLength, 2f);
             forceCmd[2] = gain * cmd * axis.normalized[2];
         
 
@@ -125,14 +134,15 @@ public class TranslationalController : MonoBehaviour
 
         if (grabbed != true) //controller bounceback 
         {
-            rotatingBody.localRotation = Quaternion.Lerp(rotatingBody.localRotation, Quaternion.identity, Time.deltaTime * returnSpeed);
+            rotatingBody.localRotation = Quaternion.Lerp(rotatingBody.localRotation, Quaternion.Euler(0,0,0), Time.deltaTime * returnSpeed);
             
         }
             grabbed = false; //if controller is still grabbed at next call it will be reassigned as true before we get back here
 
         if (railCheck != true)
         {
-            rotatingBody.position = position.Lerp(rotatingBody.position, idlePos, Time.deltaTime * returnSpeed);
+            rotatingBody.localPosition = Vector3.Lerp(rotatingBody.localPosition, idlePos, Time.deltaTime * returnSpeed);
         }
+            railCheck = false;
     }
 }

@@ -2,8 +2,7 @@ using System.Runtime.Serialization;
 using System.Xml.Serialization; 
 using UnityEngine; 
 using MathNet.Numerics.LinearAlgebra;
-using System.Numerics;
-using UnityEngine;
+
 
 
 
@@ -14,33 +13,45 @@ public class ControlLaw : MonoBehaviour
     [SerializeField] private float leverArm = 5f;
     [SerializeField] private float MIB = 0.028f;
 
+    [Header("Controller References")]
+    [SerializeField] private RotationalController RHC;
+    [SerializeField] private TranslationalController THC;
+
+   
+
     private UnityEngine.Vector3 rotImpulseAccumulator = Vector3.zero;
     private Vector3 posImpulseAccumulator = Vector3.zero;
 
-    public Vector3 Tb_ext { get; public set; } = Vector3.Zero;
-    public Vector3 F_ext  { get; public set; } = Vector3.Zero;
+    public Vector3 Tb_ext = Vector3.zero;
+    public Vector3 F_ext  = Vector3.zero;
 
     public Vector<double> w;
 
-    private double r = 2;
-    private double L = 4.29;
-    private Matrix<double> thruster_select =  Matrix<double>.Build.DenseOfArray(new double[,]{{0,0,0,0,     -1,-1,1,1,   -1,-1,1,1,     0,0,0,0,    -1,-1,1,1,  -1,-1,1,1},
+    private static double r = 2;
+    private static double L = 4.29;
+    private static Matrix<double> thruster_select =  Matrix<double>.Build.DenseOfArray(new double[,]{{0,0,0,0,     -1,-1,1,1,   -1,-1,1,1,     0,0,0,0,    -1,-1,1,1,  -1,-1,1,1},
                                                                                               {1,-1,1,-1,    0,0,0,0,    -1,-1,-1,-1,   1,-1,1,-1,    0,0,0,0,     1,1,1,1},
                                                                                               {-1,-1,-1,-1, -1,-1,-1,-1,   0,0,0,0,     1,1,1,1,     1,1,1,1,     0,0,0,0},
                                                                                               {-r,r,-r,r,     0,0,0,0,     0,0,0,0,    r,-r,r,-r,    0,0,0,0,     0,0,0,0},
                                                                                               {0,0,0,0,      -L,-L,L,L,    0,0,0,0,     0,0,0,0,     L,L,-L,-L,   0,0,0,0},
                                                                                               {0,0,0,0,       0,0,0,0,   -L,-L, L,L,    0,0,0,0,      0,0,0,0,    L,L,-L,-L}});
 
-    
+    void Start()
+    {
+       
+    }
     void FixedUpdate()
     {
+
+       
+
        var Tcmd = Vector3.zero;
        var Fcmd  = Vector3.zero;
 
         
 
         // --- ROTATION ---
-        Vector3 torqueCmd = RotationalController.rateCmd;
+        Vector3 torqueCmd = RHC.rateCmd;
         rotImpulseAccumulator += torqueCmd * Time.fixedDeltaTime;
 
         for (int i = 0; i < 3; i++)
@@ -53,7 +64,7 @@ public class ControlLaw : MonoBehaviour
         }
 
         // --- TRANSLATION ---
-        Vector3 forceCmd = TranslationalController.forceCmd;
+        Vector3 forceCmd = THC.forceCmd;
         posImpulseAccumulator += forceCmd * Time.fixedDeltaTime;
 
         for (int i = 0; i < 3; i++)
@@ -71,12 +82,14 @@ public class ControlLaw : MonoBehaviour
 
         w = 0.707*M*f; //0.707 represents cos of the angle the thrusters are at
 
-        F_ext.X = (float)w[0];
-        F_ext.Y = (float)w[1];
-        F_ext.Z = (float)w[2];
+        //W IS LENGTH 24
+
+        F_ext.x = (float)w[0];
+        F_ext.y = (float)w[1];
+        F_ext.z = (float)w[2];
         
-        Tb_ext.X = (float)w[3];
-        Tb_ext.Y = (float)w[4];
-        Tb_ext.Z = (float)w[5];
+        Tb_ext.x = (float)w[3];
+        Tb_ext.y = (float)w[4];
+        Tb_ext.z = (float)w[5];
     }
 }

@@ -1,5 +1,4 @@
-using System.Numerics;
-using System.Security.Cryptography;
+
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.XR.Interaction.Toolkit;
@@ -18,7 +17,7 @@ public class RotationalController : MonoBehaviour
     [SerializeField] private float smoothing = 10f;
 
     [Header("Output")]
-    [SerializeField] private Vector3 rateCmd;
+    [SerializeField] public Vector3 rateCmd;
 
     private Quaternion qFilter;
     private float pitch;
@@ -63,11 +62,16 @@ public class RotationalController : MonoBehaviour
             Quaternion.Euler(roll, 0f, pitch); 
 
          //grab current pad x state 
-        if (!trackpadClick.IsPressed)
-            rateCmd[1] = 0;
-        if (trackpadClick.IsPressed)
-            pad = trackpadPosition.ReadValue<Vector2>();
-            
+        if (controller.activateAction.action.IsPressed())
+        {
+            Vector2 pad = controller.activateActionValue.action.ReadValue<Vector2>();
+            rateCmd[1] = gain * Mathf.Sign(pad.x) * Mathf.Pow(pad.x, 2f);
+        } 
+        else 
+        {
+             rateCmd[1] = 0;
+        };
+           
 
     grabbed = true; //toggle grab state to tell the controller not to perform return behaviour
     }
@@ -106,7 +110,6 @@ public class RotationalController : MonoBehaviour
 
             //read in commands (MAY HAVE TO FLIP THEM AROUND DEPENDING ON COORDINATE SYSTEM)
             rateCmd[0] = gain * cmd * axis.normalized[0];
-            rateCmd[1] = gain * pad(0)^2;
             rateCmd[2] = gain * cmd * axis.normalized[2];
         
 
