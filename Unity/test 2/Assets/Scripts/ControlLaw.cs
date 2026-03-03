@@ -10,7 +10,7 @@ public class ControlLaw : MonoBehaviour
 {
     [Header("RCS Parameters")]
     [SerializeField] private float thrusterForce = 216f;
-    [SerializeField] private float leverArm = 5f;
+    [SerializeField] private float leverArm = 2f;
     [SerializeField] private float MIB = 0.028f;
 
     [Header("Controller References")]
@@ -80,16 +80,22 @@ public class ControlLaw : MonoBehaviour
         var M = thruster_select.PseudoInverse();
         var f = MathNet.Numerics.LinearAlgebra.Vector<double>.Build.Dense(new double[] {Fcmd[0], Fcmd[1], Fcmd[2], Tcmd[0], Tcmd[1], Tcmd[2],} );
 
-        w = 0.707*M*f; //0.707 represents cos of the angle the thrusters are at
+        //run command through inverted thruster authority matrix, M*f which gives a 24x1 vactor
+        //thrusteroutput is just a list of individual thruster contributions, so run it through the normal thruster authority matrix to turn it back into a 6x1 vector 
 
-        //W IS LENGTH 24
+        var thrusteroutput = 0.707*M*f; //0.707 represents cos of the angle the thrusters are at
+        var w = thruster_select * thrusteroutput;
+       
 
-        F_ext.x = (float)w[0];
-        F_ext.y = (float)w[1];
-        F_ext.z = (float)w[2];
+       //read thruster firings into external torques
+       F_ext.x = (float)w[0];
+       F_ext.y = (float)w[1];
+       F_ext.z = (float)w[2];
+
+       Tb_ext.x = (float)w[3];
+       Tb_ext.y = (float)w[4];
+       Tb_ext.z = (float)w[5];
+
         
-        Tb_ext.x = (float)w[3];
-        Tb_ext.y = (float)w[4];
-        Tb_ext.z = (float)w[5];
     }
 }
