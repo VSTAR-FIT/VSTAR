@@ -47,6 +47,8 @@ public class ControlLaw : MonoBehaviour
 
        var Tcmd = Vector3.zero;
        var Fcmd  = Vector3.zero;
+       F_ext = Vector3.zero;
+       Tb_ext = Vector3.zero;
 
         
 
@@ -84,7 +86,7 @@ public class ControlLaw : MonoBehaviour
         //thrusteroutput is just a list of individual thruster contributions, so run it through the normal thruster authority matrix to turn it back into a 6x1 vector 
 
         var thrusteroutput = 0.707*M*f; //0.707 represents cos of the angle the thrusters are at
-        var w = thruster_select * thrusteroutput;
+         w = thruster_select * thrusteroutput;
        
 
        //read thruster firings into external torques

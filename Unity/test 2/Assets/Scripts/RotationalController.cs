@@ -19,7 +19,8 @@ public class RotationalController : MonoBehaviour
     [Header("Output")]
     [SerializeField] public Vector3 rateCmd;
 
-    private Quaternion qFilter;
+    private Vector3 angles;
+    private Quaternion qIdle;
     private float pitch;
     private float roll;
 
@@ -29,7 +30,7 @@ public class RotationalController : MonoBehaviour
 
     void Start()
     {
-        qFilter = rotatingBody.rotation;
+        
     }
 
     //INTERACTION - triggers as long as collider in contact with controller
@@ -56,15 +57,29 @@ public class RotationalController : MonoBehaviour
         roll = localHandPos.z * 60f;
         roll = Mathf.Clamp(roll, -20, 20); 
 
+        float rollcmd = Mathf.Abs(roll) - deadzoneDeg;
+        if (rollcmd > 0)
+            rateCmd[0] = gain * rollcmd * Mathf.Sign(roll);
+            else
+            rateCmd[0] = 0;
+        
+        float pitchcmd = Mathf.Abs(pitch) - deadzoneDeg;
+        if (pitchcmd > 0)
+            rateCmd[2] = gain * pitchcmd * Mathf.Sign(pitch);
+            else
+            rateCmd[2] = 0;
+        
+        
 
         //apply rotation to stick
         rotatingBody.localRotation =
             Quaternion.Euler(roll, 0f, pitch); 
 
          //grab current pad x state 
-        if (controller.activateAction.action.IsPressed())
+        pad = controller.activateActionValue.action.ReadValue<Vector2>();
+        if (Mathf.Abs(pad.x) > deadzoneDeg/100) //if it's significant, read into command
         {
-            Vector2 pad = controller.activateActionValue.action.ReadValue<Vector2>();
+           
             rateCmd[1] = gain * Mathf.Sign(pad.x) * Mathf.Pow(pad.x, 2f);
         } 
         else 
@@ -77,48 +92,15 @@ public class RotationalController : MonoBehaviour
     }
     void FixedUpdate()
     {
-
-            // use slerp as a lowpass filter to reduce noise from IMU jitter
-            qFilter = Quaternion.Slerp(
-                qFilter,
-                rotatingBody.rotation,
-                smoothing * Time.fixedDeltaTime
-            );
-
-            // calculate quaternion error
-            Quaternion qIdle = pivotBody.parent.rotation;
-            Quaternion qError = qFilter * Quaternion.Inverse(qIdle);
-
-            // convert to axis-angle
-            qError.ToAngleAxis(out float angleDeg, out Vector3 axis);
-
-            //don't do anything if controller is in idle state
-            if (axis == Vector3.zero)
-                return;
-
-            // convert angle and deadzone to radians
-            float angleRad = angleDeg * Mathf.Deg2Rad;
-            float deadzoneRad = deadzoneDeg * Mathf.Deg2Rad;
-            //dont output command if in deadzone
-            if (angleRad < deadzoneRad)
-                return;
-
-            //command angle
-            float cmd = angleRad - deadzoneRad;
-            cmd = cmd * cmd; //quatratic makes large movements much more impactful while minimizing small changes (like jitter)
-
-
-            //read in commands (MAY HAVE TO FLIP THEM AROUND DEPENDING ON COORDINATE SYSTEM)
-            rateCmd[0] = gain * cmd * axis.normalized[0];
-            rateCmd[2] = gain * cmd * axis.normalized[2];
         
-
-
-
+        qIdle = pivotBody.localRotation;
 
         if (grabbed != true) //controller bounceback 
         {
-            rotatingBody.localRotation = Quaternion.Lerp(rotatingBody.localRotation, Quaternion.identity, Time.deltaTime * returnSpeed);
+            rotatingBody.localRotation = Quaternion.Lerp(rotatingBody.localRotation, qIdle, Time.deltaTime * returnSpeed);
+            angles =rotatingBody.localRotation.eulerAngles;
+            pitch = angles.x;
+            roll = angles.y;
             
         }
             grabbed = false; //if controller is still grabbed at next call it will be reassigned as true before we get back here

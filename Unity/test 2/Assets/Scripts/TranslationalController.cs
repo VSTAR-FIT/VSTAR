@@ -11,7 +11,8 @@ public class TranslationalController : MonoBehaviour
     
 
     [Header("Controller Tuning")]
-    [SerializeField] private float deadzoneDeg = 1.0f;
+    [SerializeField] private float controllerThrow = 40.0f;
+    [SerializeField] private float deadzoneDeg = 20.0f;
     [SerializeField] private float returnSpeed = 5.0f;
     [SerializeField] private float gain = 4.0f;
     [SerializeField] private float smoothing = 10f;
@@ -22,7 +23,8 @@ public class TranslationalController : MonoBehaviour
     [SerializeField] public Vector3 forceCmd;
 
     private Quaternion qIdle;
-    private Quaternion qFilter;
+    private Vector3 railAxis;
+    
     private Vector3 idlePos;
     private float pitch;
     private float roll;
@@ -33,11 +35,12 @@ public class TranslationalController : MonoBehaviour
 
     void Start()
     {
-
+        
         //idle rotation and idle position in local controller frame
-        qFilter = rotatingBody.rotation;
-        qIdle = pivotBody.rotation;
-        idlePos = pivotBody.InverseTransformPoint(rotatingBody.position);
+        idlePos = pivotBody.localPosition;
+        qIdle = pivotBody.localRotation;
+        railAxis = pivotBody.InverseTransformDirection(pivotBody.up);
+        
     }
 
     //INTERACTION - triggers as long as collider in contact with controller
@@ -63,13 +66,17 @@ public class TranslationalController : MonoBehaviour
         if (controller.activateAction.action.IsPressed())
         {
           //define current stick displacement and reference to idle state
-          float offset = localHandPos.y;
           Vector3 referencePosition = idlePos;
+          Vector3 handLocal = pivotBody.InverseTransformPoint(hand.position);
+          Vector3 displacement = handLocal - idlePos;
+
+          ds = Vector3.Dot(displacement, railAxis);
+          ds = Mathf.Clamp(ds, -railLength, railLength);
 
           //read displacement into position
-          ds = Mathf.Clamp(offset, -railLength, railLength);
-          referencePosition.y = idlePos.y + ds;
-            Debug.Log("ds:" + ds);
+          referencePosition = idlePos + railAxis*ds;
+
+          forceCmd[0] = 1* gain * Mathf.Pow(ds/railLength, 2f) * Mathf.Sign(ds); // negative bcuse of parent rotation
 
           rotatingBody.localPosition = referencePosition;
 
@@ -82,8 +89,20 @@ public class TranslationalController : MonoBehaviour
           pitch = localHandPos.x * -60f; //only works if inverted because of quaternion math shenanigans (i think)
           roll = localHandPos.z * 60f;
           
-          pitch = Mathf.Clamp(pitch, -20, 20);
-          roll = Mathf.Clamp(roll, -20, 20); 
+          pitch = Mathf.Clamp(pitch, -controllerThrow, controllerThrow);
+          roll = Mathf.Clamp(roll, -controllerThrow, controllerThrow); 
+
+          float ycmd = Mathf.Abs(pitch) - deadzoneDeg;
+        if (ycmd > 0)
+            forceCmd[1] = -1 *gain * ycmd * Mathf.Sign(pitch);
+            else
+            forceCmd[1] = 0;
+        
+        float zcmd = Mathf.Abs(roll) - deadzoneDeg;
+        if (zcmd > 0)
+            forceCmd[2] = gain * zcmd * Mathf.Sign(roll);
+            else
+            forceCmd[2] = 0;
           
           //apply rotation to stick
           rotatingBody.localRotation = Quaternion.Euler(roll, 0f, pitch); 
@@ -94,47 +113,10 @@ public class TranslationalController : MonoBehaviour
  void FixedUpdate()
     {
 
-            // use slerp as a lowpass filter to reduce noise from IMU jitter
-            qFilter = Quaternion.Slerp(
-                qFilter,
-                rotatingBody.rotation,
-                smoothing * Time.fixedDeltaTime
-            );
-
-            // calculate quaternion error
-            Quaternion qError = qFilter * Quaternion.Inverse(qIdle);
-
-            // convert to axis-angle
-            qError.ToAngleAxis(out float angleDeg, out Vector3 axis);
-
-            //don't do anything if controller is in idle state
-            if (axis == Vector3.zero)
-                return;
-
-            // convert angle and deadzone to radians
-            float angleRad = angleDeg * Mathf.Deg2Rad;
-            float deadzoneRad = deadzoneDeg * Mathf.Deg2Rad;
-            //dont output command if in deadzone
-            if (angleRad < deadzoneRad)
-                return;
-
-            //command angle
-            float cmd = angleRad - deadzoneRad;
-            cmd = cmd * cmd; //quatratic makes large movements much more impactful while minimizing small changes (like jitter)
-
-
-            //read in commands (MAY HAVE TO FLIP THEM AROUND DEPENDING ON COORDINATE SYSTEM)
-            forceCmd[0] = gain * cmd * axis.normalized[0];
-            forceCmd[1] = gain * Mathf.Pow(ds/railLength, 2f);
-            forceCmd[2] = gain * cmd * axis.normalized[2];
-        
-
-
-
-
+            
         if (grabbed != true) //controller bounceback 
         {
-            rotatingBody.localRotation = Quaternion.Lerp(rotatingBody.localRotation, Quaternion.Euler(0,0,0), Time.deltaTime * returnSpeed);
+            rotatingBody.localRotation = Quaternion.Lerp(rotatingBody.localRotation, qIdle, Time.deltaTime * returnSpeed);
             
         }
             grabbed = false; //if controller is still grabbed at next call it will be reassigned as true before we get back here

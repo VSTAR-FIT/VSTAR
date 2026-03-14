@@ -1,45 +1,153 @@
 using System.Security.Cryptography.X509Certificates;
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro; 
 
-public class ScreenUpdater : Monobehavior
+public class ScreenUpdater : MonoBehaviour
 {
+    [SerializeField] public GameObject Canvas;
     [SerializeField] private Transform orionBody;
 	[SerializeField] private Transform issBody;
     [SerializeField] private RotationalController RHC;
     [SerializeField] private TranslationalController THC;
     [SerializeField] private dynamicsModel dyn;
-    [SerializeField] private Vector3 goalDeg = [0,0,0];
+    [SerializeField] private Vector3 goalDeg = Vector3.zero;
+    [SerializeField] private Vector2 rloc = Vector2.zero;
+    [SerializeField] private Vector2 tloc = Vector2.zero;
+    [SerializeField] private TMP_FontAsset font;
     private double[] position;
     private double[] rotation;
 
+
+    private Vector3 orionBodyPosition;
+    private Vector3 issBodyPosition;
+    private Vector3 roterror;
+    private Vector3 poserror;
     private Vector3 rcmd;
     private Vector3 tcmd;
 
     
-
+    
+    TextMeshProUGUI tempt;
+    TextMeshProUGUI tempr;
     private string ratesText;
 	private string posText;
 
-
+    
+    
     void Start()
     {
         position = dyn.pos;
         rotation = dyn.rot;
         rcmd = RHC.rateCmd;
         tcmd = THC.forceCmd;
+        orionBodyPosition = orionBody.position;
+        issBodyPosition = issBody.position;
 
-        ratesText = "    CUR     CMD     ERROR    RATE /n R:  "+ rotation[0] + "    " + goalDeg[0] + "    " + goalDeg[0]-rotation[0] + "    " + rotation[3] +"/n P:  "+ rotation[1] + "    " + goalDeg[1] + "    " + goalDeg[1]-rotation[1] + "    " + rotation[4] +"/n Y:  "+ rotation[2] + "    " + goalDeg[2] + "    " + goalDeg[2]-rotation[2] + "    " + rotation[5];
-        ratesText = ratesText.Replace("/n", System.Environment.Newline);
+        for (int i = 0 ; i<3 ; i++)
+            roterror[i] = goalDeg[0]-(float)rotation[0];
 
-		posText = "@@ DP-DP POS@DP-DP VEL/n X: @" + issBody[0] -orionBody.position[0] +"@" + position[3] + "/n Y: @" + issBody[1] -orionBody.position[1] +"@" + position[4] + "/n Z: @" + issBody[2] -orionBody.position[2] +"@" + position[5]; 
-		posText = posText.Replace("/n", System.Environment.Newline);
+        for (int i =0; i<3; i++)
+            poserror[i] = orionBodyPosition[i] - issBodyPosition[i];
+
+        ratesText = "    CUR     CMD     ERROR    RATE \n R:  "+ rotation[0] + "    " + goalDeg[0] + "    " + roterror[0] + "    " + rotation[3] +"\n P:  "+ rotation[1] + "    " + goalDeg[1] + "    " + roterror[1] + "    " + rotation[4] +"\n Y:  "+ rotation[2] + "    " + goalDeg[2] + "    " + roterror[2] + "    " + rotation[5];
+
+		posText = "@@ DP-DP POS@DP-DP VEL\n X: @" + poserror[0] +"@" + position[3] + "\n Y: @" + poserror[1] +"@" + position[4] + "\n Z: @" + poserror[2] +"@" + position[5]; 
 		posText = posText.Replace("@", "   ");
+
         //create render texture for camera and place it 
+
+        //**************************ROTATION DISPLAY******************************************
+        // create text object and assign it to the canvas
+        GameObject rtobj = new GameObject("Rotational Display"); 
+        rtobj.transform.SetParent(Canvas.transform, false);
+
+        //add the text
+        tempr = rtobj.AddComponent<TextMeshProUGUI>();
+        tempr.text = ratesText; 
+
+        //font
+        tempr.font = font;
+        tempr.fontSize = 8;
+        tempr.alignment = TextAlignmentOptions.TopLeft;
+        tempr.enableWordWrapping = false;
+
+        //position it using the rect transform
+        RectTransform rectTransformR = rtobj.GetComponent<RectTransform>();
+        rectTransformR.anchoredPosition = rloc; 
+        rectTransformR.sizeDelta = new Vector2(600, 300); //set size (width/height)
+
+        //anchor
+        rectTransformR.anchorMin = new Vector2(0,1);
+        rectTransformR.anchorMax = new Vector2(0,1);
+        rectTransformR.pivot = new Vector2(0,1);
+
+        //**************************TRANSLATION DISPLAY******************************************
+        // create text object and assign it to the canvas
+        GameObject ttobj = new GameObject("Translational Display"); 
+        ttobj.transform.SetParent(Canvas.transform, false);
+
+        //add the text
+        tempt = ttobj.AddComponent<TextMeshProUGUI>();
+        tempt.text = posText; 
+
+        //font
+        tempt.font = font;
+        tempt.fontSize = 8;
+        tempt.alignment = TextAlignmentOptions.TopLeft;
+        tempt.enableWordWrapping = false;
+
+        //position it using the rect transform
+        RectTransform rectTransformT = ttobj.GetComponent<RectTransform>();
+        rectTransformT.anchoredPosition = tloc; 
+        rectTransformT.sizeDelta = new Vector2(600, 300); //set size (width/height)
+        
+        //amchor
+        rectTransformT.anchorMin = new Vector2(0,1);
+        rectTransformT.anchorMax = new Vector2(0,1);
+        rectTransformT.pivot = new Vector2(0,1);
 
     }
 
     void FixedUpdate()
     {
+        //update our values
+        position = dyn.pos;
+        rotation = dyn.rot;
+        rcmd = RHC.rateCmd;
+        tcmd = THC.forceCmd;
+        orionBodyPosition = orionBody.position;
+        issBodyPosition = issBody.position;
 
+        for (int i = 0 ; i<3 ; i++)
+            roterror[i] = goalDeg[i]-(float)rotation[i];
+
+        for (int i =0; i<3; i++)
+            poserror[i] = orionBodyPosition[i] - issBodyPosition[i];
+
+         string Row(string label, float a, float b, float c, float d)
+            {
+                return string.Format("{0} {1,8:F2} {2,8:F2} {3,8:F2} {4,8:F2}\n",
+                label, a, b, c, d);
+            }
+        ratesText =
+            "      CUR       CMD      ERR     RATE\n" +
+            Row("R", (float)rotation[0], goalDeg[0], roterror[0], (float)rotation[3]) +
+            Row("P", (float)rotation[1], goalDeg[1], roterror[1], (float)rotation[4]) +
+            Row("Y", (float)rotation[2], goalDeg[2], roterror[2], (float)rotation[5]);
+
+        posText =
+            "      DP-POS      DP-VEL\n" +
+            string.Format("X {0,10:F3} {1,10:F3}\n", poserror[0], position[3]) +
+            string.Format("Y {0,10:F3} {1,10:F3}\n", poserror[1], position[4]) +
+            string.Format("Z {0,10:F3} {1,10:F3}", poserror[2], position[5]);
+
+
+
+
+
+        //edit display texts
+        tempr.text = ratesText;
+        tempt.text = posText;
     }
 }
