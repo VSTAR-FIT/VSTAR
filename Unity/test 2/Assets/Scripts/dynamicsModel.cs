@@ -27,7 +27,7 @@ public class dynamicsModel : MonoBehaviour //itialize everything
 
 
     //initialize rotational state vector before start so that fixedupdate doesnt run before rot gets a value
-    private double[] rot = 
+    public double[] rot = 
     new double[7] 
     { 
        0,
@@ -39,7 +39,7 @@ public class dynamicsModel : MonoBehaviour //itialize everything
        0,
        0 
     }; 
-    private double[] pos = new double[6];
+    public double[] pos = new double[6];
     
     private RotateOrion3 Spin;
     private TranslateOrion3 Move;
