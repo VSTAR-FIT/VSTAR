@@ -8,13 +8,15 @@ public class RotationalController : MonoBehaviour
     [Header("References")]
     [SerializeField] private Transform rotatingBody;
     [SerializeField] private Transform pivotBody;
+    [SerializeField] private InputActionReference trackpadAction;
 
 
     [Header("Controller Tuning")]
     [SerializeField] private float deadzoneDeg = 1.0f;
+    [SerializeField] private float yawDeadzoneDeg = 0.1f;
     [SerializeField] private float returnSpeed = 5.0f;
     [SerializeField] private float gain = 4.0f;
-    [SerializeField] private float smoothing = 10f;
+    [SerializeField] private float Throw = 20f;
 
     [Header("Output")]
     [SerializeField] public Vector3 rateCmd;
@@ -23,11 +25,19 @@ public class RotationalController : MonoBehaviour
     private Quaternion qIdle;
     private float pitch;
     private float roll;
+    private float pitchcmd;
+    private float rollcmd;
 
     private Vector2 pad;
 
     private bool grabbed = false;
 
+
+    float NormAng(float ang)
+    {
+        if(ang > 180f) ang -= 360f;
+        return ang;
+    }
     void Start()
     {
         
@@ -52,18 +62,18 @@ public class RotationalController : MonoBehaviour
 
         //convert position to angle, clamp to mechanical limits
         pitch = localHandPos.x * -60f; //only works if inverted because of quaternion math shenanigans (i think)
-        pitch = Mathf.Clamp(pitch, -20, 20);
+        pitch = Mathf.Clamp(pitch, -Throw, Throw);
 
         roll = localHandPos.z * 60f;
-        roll = Mathf.Clamp(roll, -20, 20); 
+        roll = Mathf.Clamp(roll, -Throw, Throw); 
 
-        float rollcmd = Mathf.Abs(roll) - deadzoneDeg;
+        rollcmd = Mathf.Abs(roll) - deadzoneDeg;
         if (rollcmd > 0)
             rateCmd[0] = gain * rollcmd * Mathf.Sign(roll);
             else
             rateCmd[0] = 0;
         
-        float pitchcmd = Mathf.Abs(pitch) - deadzoneDeg;
+        pitchcmd = Mathf.Abs(pitch) - deadzoneDeg;
         if (pitchcmd > 0)
             rateCmd[2] = gain * pitchcmd * Mathf.Sign(pitch);
             else
@@ -76,11 +86,11 @@ public class RotationalController : MonoBehaviour
             Quaternion.Euler(roll, 0f, pitch); 
 
          //grab current pad x state 
-        pad = controller.activateActionValue.action.ReadValue<Vector2>();
-        if (Mathf.Abs(pad.x) > deadzoneDeg/100) //if it's significant, read into command
+        pad = pad = trackpadAction.action.ReadValue<Vector2>();
+        if (Mathf.Abs(pad.x) > yawDeadzoneDeg) //if it's significant, read into command
         {
            
-            rateCmd[1] = gain * Mathf.Sign(pad.x) * Mathf.Pow(pad.x, 2f);
+            rateCmd[1] = gain * pad.x;
         } 
         else 
         {
@@ -95,12 +105,11 @@ public class RotationalController : MonoBehaviour
         
         qIdle = pivotBody.localRotation;
 
-        if (grabbed != true) //controller bounceback 
+        if (!grabbed) //controller bounceback 
         {
             rotatingBody.localRotation = Quaternion.Lerp(rotatingBody.localRotation, qIdle, Time.deltaTime * returnSpeed);
-            angles =rotatingBody.localRotation.eulerAngles;
-            pitch = angles.x;
-            roll = angles.y;
+            
+            rateCmd = Vector3.zero;
             
         }
             grabbed = false; //if controller is still grabbed at next call it will be reassigned as true before we get back here

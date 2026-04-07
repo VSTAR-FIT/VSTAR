@@ -25,8 +25,8 @@ public class ScreenUpdater : MonoBehaviour
     private Vector3 poserror;
     private Vector3 rcmd;
     private Vector3 tcmd;
-
-    
+    private Quaternion q;
+    private Vector3 euler;
     
     TextMeshProUGUI tempt;
     TextMeshProUGUI tempr;
@@ -38,24 +38,25 @@ public class ScreenUpdater : MonoBehaviour
     void Start()
     {
         position = dyn.pos;
+       
         rotation = dyn.rot;
+        q = new Quaternion((float)rotation[0],(float)rotation[1],(float)rotation[2],(float)rotation[3]);
+        euler = q.eulerAngles;
         rcmd = RHC.rateCmd;
         tcmd = THC.forceCmd;
         orionBodyPosition = orionBody.position;
         issBodyPosition = issBody.position;
 
         for (int i = 0 ; i<3 ; i++)
-            roterror[i] = goalDeg[0]-(float)rotation[0];
+            roterror[i] = goalDeg[i]-(float)rotation[i];
 
         for (int i =0; i<3; i++)
             poserror[i] = orionBodyPosition[i] - issBodyPosition[i];
 
-        ratesText = "    CUR     CMD     ERROR    RATE \n R:  "+ rotation[0] + "    " + goalDeg[0] + "    " + roterror[0] + "    " + rotation[3] +"\n P:  "+ rotation[1] + "    " + goalDeg[1] + "    " + roterror[1] + "    " + rotation[4] +"\n Y:  "+ rotation[2] + "    " + goalDeg[2] + "    " + roterror[2] + "    " + rotation[5];
+        ratesText = "    CUR     CMD     ERROR    RATE \n R:  "+ euler.x + "    " + goalDeg[0] + "    " + roterror[0] + "    " + rotation[4] +"\n P:  "+ euler.y + "    " + goalDeg[1] + "    " + roterror[1] + "    " + rotation[5] +"\n Y:  "+ euler.z + "    " + goalDeg[2] + "    " + roterror[2] + "    " + rotation[6];
 
 		posText = "@@ DP-DP POS@DP-DP VEL\n X: @" + poserror[0] +"@" + position[3] + "\n Y: @" + poserror[1] +"@" + position[4] + "\n Z: @" + poserror[2] +"@" + position[5]; 
 		posText = posText.Replace("@", "   ");
-
-        //create render texture for camera and place it 
 
         //**************************ROTATION DISPLAY******************************************
         // create text object and assign it to the canvas
@@ -132,13 +133,13 @@ public class ScreenUpdater : MonoBehaviour
             }
         ratesText =
             "      CUR       CMD      ERR     RATE\n" +
-            Row("R", (float)rotation[0], goalDeg[0], roterror[0], (float)rotation[3]) +
-            Row("P", (float)rotation[1], goalDeg[1], roterror[1], (float)rotation[4]) +
-            Row("Y", (float)rotation[2], goalDeg[2], roterror[2], (float)rotation[5]);
+            Row("R", euler.z, goalDeg[0], roterror[0], (float)rotation[4]) +
+            Row("P", euler.x, goalDeg[1], roterror[1], (float)rotation[5]) +
+            Row("Y", euler.y, goalDeg[2], roterror[2], (float)rotation[6]);
 
         posText =
             "      DP-POS      DP-VEL\n" +
-            string.Format("X {0,10:F3} {1,10:F3}\n", poserror[0], position[3]) +
+            string.Format("X {0,10:F3} {1,10:F3}\n", -poserror[0], position[3]) +
             string.Format("Y {0,10:F3} {1,10:F3}\n", poserror[1], position[4]) +
             string.Format("Z {0,10:F3} {1,10:F3}", poserror[2], position[5]);
 

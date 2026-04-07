@@ -15,7 +15,6 @@ public class TranslationalController : MonoBehaviour
     [SerializeField] private float deadzoneDeg = 20.0f;
     [SerializeField] private float returnSpeed = 5.0f;
     [SerializeField] private float gain = 4.0f;
-    [SerializeField] private float smoothing = 10f;
     [SerializeField] private float railLength = 1f;
 
 
@@ -70,13 +69,13 @@ public class TranslationalController : MonoBehaviour
           Vector3 handLocal = pivotBody.InverseTransformPoint(hand.position);
           Vector3 displacement = handLocal - idlePos;
 
-          ds = Vector3.Dot(displacement, railAxis);
+          ds = Vector3.Dot(displacement, railAxis)-0.025f; //subtract hand diameter (otherwise we get weird jumps)
           ds = Mathf.Clamp(ds, -railLength, railLength);
 
           //read displacement into position
           referencePosition = idlePos + railAxis*ds;
 
-          forceCmd[0] = 1* gain * Mathf.Pow(ds/railLength, 2f) * Mathf.Sign(ds); // negative bcuse of parent rotation
+          forceCmd[0] = -1* gain * Mathf.Pow(ds/railLength, 2f) * Mathf.Sign(ds); // negative bcuse of parent rotation
 
           rotatingBody.localPosition = referencePosition;
 
@@ -113,10 +112,11 @@ public class TranslationalController : MonoBehaviour
  void FixedUpdate()
     {
 
-            
+            forceCmd = Vector3.zero;
         if (grabbed != true) //controller bounceback 
         {
             rotatingBody.localRotation = Quaternion.Lerp(rotatingBody.localRotation, qIdle, Time.deltaTime * returnSpeed);
+            
             
         }
             grabbed = false; //if controller is still grabbed at next call it will be reassigned as true before we get back here

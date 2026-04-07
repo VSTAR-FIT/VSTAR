@@ -12,9 +12,9 @@ using MathNet.Numerics.LinearAlgebra;
 public class RotateOrion3 : MonoBehaviour
 {
 	//initialize the inertia matrix, take inverse (need for state derivative) MOIS ARE PLACEHOLDER
-    private const double Ixx = 400 ; 
-    private const double Iyy = 400 ;
-    private const double Izz = 400 ;
+    private const double Ixx = 40000 ; 
+    private const double Iyy = 40000 ;
+    private const double Izz = 40000 ;
     
     private readonly Matrix<double> MOI_b ;
     private readonly Matrix<double> MOI_b_inv ;
