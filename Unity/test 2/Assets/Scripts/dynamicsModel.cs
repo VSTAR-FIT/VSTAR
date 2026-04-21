@@ -25,6 +25,8 @@ public class dynamicsModel : MonoBehaviour //itialize everything
     [SerializeField] private UnityEngine.Vector3 F_ext = Vector3.zero;
     private Rigidbody rb; //need for velocity
 
+   [Header("Other Stuff")]
+   [SerializeField] private dockingchecker dc;
 
     //initialize rotational state vector before start so that fixedupdate doesnt run before rot gets a value
     public double[] rot = 
@@ -92,7 +94,8 @@ public class dynamicsModel : MonoBehaviour //itialize everything
 
  void FixedUpdate()
  {
-   
+   if(dc.endSim == true) return; //stop if the simulation is over
+
    tau = ControlLaw.Tb_ext;
    F_ext = ControlLaw.F_ext;
 

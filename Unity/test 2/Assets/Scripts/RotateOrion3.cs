@@ -40,7 +40,7 @@ public class RotateOrion3 : MonoBehaviour
      //safety reset
      if (x.Length != 7)
         {
-             Debug.LogError($"FUCK YOU");
+             Debug.LogError($"State array wrong size");
              
 
             return new double[7] {0, 0, 0, 1, 0, 0, 0} ; // identity quaternion + zero angular velocity
@@ -74,7 +74,7 @@ public class RotateOrion3 : MonoBehaviour
         var q = MathNet.Numerics.LinearAlgebra.Vector<double>.Build.Dense(new double[] { x[0], x[1], x[2], x[3]});
         var w = MathNet.Numerics.LinearAlgebra.Vector<double>.Build.Dense( new double[] { x[4], x[5], x[6]});
 
-
+     //split up row-by-row
         dxdt[0] = 0.5 * (q[3] * w[0] + q[2] * w[1] - q[1] * w[2]);
         dxdt[1] = 0.5 * (q[3] * w[1] + q[0] * w[2] - q[2] * w[0]);
         dxdt[2] = 0.5 * (q[3] * w[2] + q[1] * w[0] - q[0] * w[1]);

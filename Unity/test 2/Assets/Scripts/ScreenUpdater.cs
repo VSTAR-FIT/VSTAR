@@ -48,7 +48,7 @@ public class ScreenUpdater : MonoBehaviour
         issBodyPosition = issBody.position;
 
         for (int i = 0 ; i<3 ; i++)
-            roterror[i] = goalDeg[i]-(float)rotation[i];
+            roterror[i] = goalDeg[i]-(float)euler[i];
 
         for (int i =0; i<3; i++)
             poserror[i] = orionBodyPosition[i] - issBodyPosition[i];
@@ -115,13 +115,16 @@ public class ScreenUpdater : MonoBehaviour
         //update our values
         position = dyn.pos;
         rotation = dyn.rot;
+        q = new Quaternion((float)rotation[0],(float)rotation[1],(float)rotation[2],(float)rotation[3]);
+        euler = q.eulerAngles;
+
         rcmd = RHC.rateCmd;
         tcmd = THC.forceCmd;
         orionBodyPosition = orionBody.position;
         issBodyPosition = issBody.position;
 
         for (int i = 0 ; i<3 ; i++)
-            roterror[i] = goalDeg[i]-(float)rotation[i];
+            roterror[i] = goalDeg[i]-(float)euler[i];
 
         for (int i =0; i<3; i++)
             poserror[i] = orionBodyPosition[i] - issBodyPosition[i];
@@ -133,9 +136,9 @@ public class ScreenUpdater : MonoBehaviour
             }
         ratesText =
             "      CUR       CMD      ERR     RATE\n" +
-            Row("R", euler.z, goalDeg[0], roterror[0], (float)rotation[4]) +
-            Row("P", euler.x, goalDeg[1], roterror[1], (float)rotation[5]) +
-            Row("Y", euler.y, goalDeg[2], roterror[2], (float)rotation[6]);
+            Row("R", euler.x, goalDeg[0], roterror[0], (float)rotation[4]) +
+            Row("P", euler.z, goalDeg[1], roterror[2], (float)rotation[6]) +
+            Row("Y", euler.y, goalDeg[2], roterror[1], (float)rotation[5]);
 
         posText =
             "      DP-POS      DP-VEL\n" +

@@ -13,11 +13,36 @@ public class ControlLaw : MonoBehaviour
     [SerializeField] private float leverArm = 2f;
     [SerializeField] private float MIB = 0.028f;
 
-    [Header("Controller References")]
+    [Header("References")]
     [SerializeField] private RotationalController RHC;
     [SerializeField] private TranslationalController THC;
+    [SerializeField] private dynamicsModel dyn;
 
+    [Header("PID Gains")]
+
+    // Rotation
+    [SerializeField] private float Kp_rot = 5f;
+    [SerializeField] private float Kd_rot = 3f;
    
+    // Translation
+    [SerializeField] private float Kp_pos = 5f;
+    [SerializeField] private float Kd_pos = 3f;
+
+    
+    private Vector3 posErrorIntegral = Vector3.zero;
+    private Vector3 rotErrorIntegral = Vector3.zero;
+
+    private double[] lastRotError = new double[7];
+    private Vector3 qdotc;
+    private Vector3 qdotlast;
+    private Vector3 qdoterror;
+    private Vector3 qdoterrord;
+
+    private double[] lastPosError = new double[6];
+    private Vector3 pdotc;
+    private Vector3 pdotlast;
+    private Vector3 pdoterror;
+    private Vector3 pdoterrord;
 
     private UnityEngine.Vector3 rotImpulseAccumulator = Vector3.zero;
     private Vector3 posImpulseAccumulator = Vector3.zero;
@@ -38,7 +63,7 @@ public class ControlLaw : MonoBehaviour
 
     void Start()
     {
-       
+       qdotlast=Vector3.zero;
     }
     void FixedUpdate()
     {
@@ -53,20 +78,37 @@ public class ControlLaw : MonoBehaviour
         
 
         // --- ROTATION ---
-        Vector3 torqueCmd = RHC.rateCmd;
+
+        Vector3 torqueCmd = RHC.rateCmd; // grab rate command
+        lastRotError = dyn.rot;
+        qdotc= new Vector3((float)lastRotError[4], (float)lastRotError[5], (float)lastRotError[6]); // grab rates
+
+        qdoterror = torqueCmd - qdotc; //determine porportional error
+        qdoterrord = (qdotc - qdotlast)/Time.fixedDeltaTime; // determine derivative error
+
+        torqueCmd = Kp_rot * qdoterror + Kd_rot * qdoterrord; // Apply PD control (no integral because yucky and windup issue)
+
         rotImpulseAccumulator += torqueCmd * Time.fixedDeltaTime;
 
         for (int i = 0; i < 3; i++)
         {
-            if (Mathf.Abs(rotImpulseAccumulator[i]) >= MIB)
+            if (Mathf.Abs(rotImpulseAccumulator[i]) >= MIB) // check if accumulation hits MIB
             {
-                Tcmd[i] = Mathf.Sign(rotImpulseAccumulator[i]) * thrusterForce * leverArm;
+                Tcmd[i] = Mathf.Sign(rotImpulseAccumulator[i]) * thrusterForce * leverArm; // apply to thruster cmd
                 rotImpulseAccumulator[i] = 0f;
             }
         }
-
+        qdotlast = qdotc;
+        
         // --- TRANSLATION ---
         Vector3 forceCmd = THC.forceCmd;
+        lastPosError = dyn.pos;
+        pdotc= new Vector3((float)lastPosError[3], (float)lastPosError[4], (float)lastPosError[5]); // grab rates
+
+        pdoterror = forceCmd - pdotc; //determine porportional error
+        pdoterrord = (pdotc - pdotlast)/Time.fixedDeltaTime; // determine derivative error
+
+        forceCmd = Kp_pos * pdoterror + Kd_pos * pdoterrord; // Apply PD control (no integral because yucky and windup issue)
         posImpulseAccumulator += forceCmd * Time.fixedDeltaTime;
 
         for (int i = 0; i < 3; i++)
@@ -77,12 +119,12 @@ public class ControlLaw : MonoBehaviour
                 posImpulseAccumulator[i] = 0f;
             }
         }
-
+        pdotlast = pdotc;
 
         var M = thruster_select.PseudoInverse();
         var f = MathNet.Numerics.LinearAlgebra.Vector<double>.Build.Dense(new double[] {Fcmd[0], Fcmd[1], Fcmd[2], Tcmd[0], Tcmd[1], Tcmd[2],} );
 
-        //run command through inverted thruster authority matrix, M*f which gives a 24x1 vactor
+        //run command through inverted thruster authority matrix, M* dot f which gives a 24x1 vactor
         //thrusteroutput is just a list of individual thruster contributions, so run it through the normal thruster authority matrix to turn it back into a 6x1 vector 
 
         var thrusteroutput = 0.707*M*f; //0.707 represents cos of the angle the thrusters are at

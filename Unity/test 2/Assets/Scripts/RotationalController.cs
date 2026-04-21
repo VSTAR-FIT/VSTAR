@@ -38,10 +38,6 @@ public class RotationalController : MonoBehaviour
         if(ang > 180f) ang -= 360f;
         return ang;
     }
-    void Start()
-    {
-        
-    }
 
     //INTERACTION - triggers as long as collider in contact with controller
     private void OnTriggerStay(Collider other)
@@ -79,14 +75,8 @@ public class RotationalController : MonoBehaviour
             else
             rateCmd[2] = 0;
         
-        
-
-        //apply rotation to stick
-        rotatingBody.localRotation =
-            Quaternion.Euler(roll, 0f, pitch); 
-
-         //grab current pad x state 
-        pad = pad = trackpadAction.action.ReadValue<Vector2>();
+        //grab current pad x state 
+        pad = trackpadAction.action.ReadValue<Vector2>();
         if (Mathf.Abs(pad.x) > yawDeadzoneDeg) //if it's significant, read into command
         {
            
@@ -97,6 +87,12 @@ public class RotationalController : MonoBehaviour
              rateCmd[1] = 0;
         };
            
+
+        //apply rotation to stick
+        rotatingBody.localRotation =
+            Quaternion.Euler(roll, 0f, pitch); 
+
+         
 
     grabbed = true; //toggle grab state to tell the controller not to perform return behaviour
     }
